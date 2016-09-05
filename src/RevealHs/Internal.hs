@@ -5,18 +5,25 @@
 module RevealHs.Internal where
 
 import           Data.Data
+import           Data.Hashable
+import qualified Data.HashMap.Strict        as HM
 import           Data.List
 import           Data.String.Interpolate
 import           Language.Haskell.TH.Syntax
 
+type SlideMap = HM.HashMap Module [Slide]
+
+instance Hashable PkgName
+instance Hashable ModName
+instance Hashable Module
+
+--------
+-- Slide hierarchy
+--------
+
 data Block = TextBlock String
            | TableBlock Table
            deriving (Data, Lift, Show)
-
-
---------
--- Table
---------
 
 newtype Cell = Cell [Block]
              deriving (Data, Lift, Show)
@@ -36,7 +43,7 @@ newtype Slide = Slide Block
 renderSlide :: Slide -> String
 renderSlide (Slide (TextBlock text)) = text
 
-exportRevealPage :: [Slide] -> String
+exportRevealPage :: SlideMap -> String
 exportRevealPage slides = [i|
 <!DOCTYPE html>
 <html>
@@ -47,7 +54,7 @@ exportRevealPage slides = [i|
     <body>
         <div class="reveal">
             <div class="slides">
-#{render slides}
+#{renderGroup $ HM.toList slides}
             </div>
         </div>
         <script src="file:///home/kj/Lab/external/reveal.js/js/reveal.js"></script>
@@ -57,5 +64,7 @@ exportRevealPage slides = [i|
     </body>
 </html>|]
   where
-    render :: [Slide] -> String
-    render = intercalate "\n" . map (\r -> [i|<section>#{renderSlide r}</section>|])
+    renderGroup :: [(Module, [Slide])] -> String
+    renderGroup = intercalate "\n" . map (\(m, s) -> [i|<section>#{renderSlides s}</section>|])
+    renderSlides :: [Slide] -> String
+    renderSlides = intercalate "\n" . map (\r -> [i|<section>#{renderSlide r}</section>|]) . reverse

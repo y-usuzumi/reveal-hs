@@ -3,20 +3,8 @@
 
 module Main where
 
-import           Data.IORef
-import           RevealHs.Internal
-import           RevealHs.QQ
-import           RevealHs.TH
-import           System.IO.Unsafe
-
-slide [md|
-# Hello
-
-## You idiot
-|]
-
-slide [md|
-# A monad is just a monoid in the category of endofunctors.
-|]
+import RevealHs.Sample.Section1
+import RevealHs.Sample.Section2
+import RevealHs.TH
 
 mkRevealPage

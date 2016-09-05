@@ -2,7 +2,6 @@
 
 module RevealHs.TH where
 
-import           Data.Hashable
 import           Data.HashMap.Strict        as HM
 import           Data.IORef
 import           Data.Maybe
@@ -12,14 +11,8 @@ import           RevealHs.Internal          as I
 import           RevealHs.QQ
 import           System.IO.Unsafe
 
-instance Hashable PkgName
-instance Hashable ModName
-instance Hashable Module
-
-type SlidesMap = HashMap Module [Slide]
-
 {-# NOINLINE slidesRef #-}
-slidesRef :: IORef SlidesMap
+slidesRef :: IORef SlideMap
 slidesRef = unsafePerformIO $ newIORef empty
 
 slide :: Slide -> DecsQ
@@ -47,6 +40,6 @@ mkRevealPage = [d|main = putStrLn $export|]
     export = do
       mod <- thisModule
       runIO $ do
-        slides <- (fromJust . HM.lookup mod) <$> readIORef slidesRef
-        return $ I.exportRevealPage (reverse slides)
+        slides <- readIORef slidesRef
+        return $ I.exportRevealPage slides
       >>= stringE

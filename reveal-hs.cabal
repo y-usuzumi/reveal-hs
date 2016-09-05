@@ -32,6 +32,8 @@ library
 executable reveal-hs-exe
   hs-source-dirs:      app
   main-is:             Main.hs
+  other-modules:       RevealHs.Sample.Section1
+                     , RevealHs.Sample.Section2
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , reveal-hs
