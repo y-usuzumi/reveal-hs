@@ -1,39 +1,52 @@
 {-# LANGUAGE TemplateHaskell #-}
+
 module RevealHs.TH where
 
-import Language.Haskell.TH
-import System.IO.Unsafe
-import Data.IORef
+import           Data.Hashable
+import           Data.HashMap.Strict        as HM
+import           Data.IORef
+import           Data.Maybe
+import           Language.Haskell.TH
+import           Language.Haskell.TH.Syntax
+import           RevealHs.Internal          as I
+import           RevealHs.QQ
+import           System.IO.Unsafe
 
-{-# NOINLINE slideCount #-}
-slideCount :: IORef Int
-slideCount = unsafePerformIO $ newIORef 0
+instance Hashable PkgName
+instance Hashable ModName
+instance Hashable Module
 
-mkSlideName :: Int -> Name
-mkSlideName idx = mkName $ "__slide_" ++ show idx
+type SlidesMap = HashMap Module [Slide]
 
-nextSlideName :: Q Name
-nextSlideName = runIO $ do
-  slideSeq <- readIORef slideCount
-  modifyIORef' slideCount (+1)
-  return $ mkSlideName slideSeq
+{-# NOINLINE slidesRef #-}
+slidesRef :: IORef SlidesMap
+slidesRef = unsafePerformIO $ newIORef empty
 
-initialize :: DecsQ
-initialize = return [ PragmaD $ InlineP (mkName "__slides") NoInline FunLike AllPhases
-                    , SigD (mkName "__slides") (AppT (ConT (mkName "IORef")) (AppT ListT (ConT (mkName "String"))))
-                    , ValD (VarP (mkName "__slides"))
-                      (NormalB (AppE (VarE (mkName "unsafePerformIO")) (AppE (VarE (mkName "newIORef")) (ConE (mkName "[]"))))) []
-                    ]
-
-slide :: String -> DecsQ
-slide a = do
-  name <- nextSlideName
-  [d|$(return $ VarP name) = $(return $ LitE (StringL a))|]
+slide :: Slide -> DecsQ
+slide s = do
+  mod <- thisModule
+  runIO $ do
+    modifyIORef' slidesRef (alter addSlide mod)
+    return []
+  where
+    addSlide Nothing       = Just [s]
+    addSlide (Just slides) = Just (s:slides)
 
 printEverything :: DecsQ
 printEverything = [d|main = print $slides|]
   where
-    slides :: Q Exp
+    slides :: ExpQ
     slides = runIO $ do
-      currIdx <- readIORef slideCount
-      return $ ListE $ map (VarE . mkSlideName) [0..currIdx-1]
+      slides <- readIORef slidesRef
+      runQ $ liftData slides
+
+mkRevealPage :: DecsQ
+mkRevealPage = [d|main = putStrLn $export|]
+  where
+    export :: ExpQ
+    export = do
+      mod <- thisModule
+      runIO $ do
+        slides <- (fromJust . HM.lookup mod) <$> readIORef slidesRef
+        return $ I.exportRevealPage slides
+      >>= stringE

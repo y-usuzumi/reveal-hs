@@ -1,13 +1,16 @@
+{-# LANGUAGE QuasiQuotes     #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Main where
 
-import RevealHs.TH
-import System.IO.Unsafe
-import Data.IORef
+import           Data.IORef
+import           RevealHs.Internal
+import           RevealHs.QQ
+import           RevealHs.TH
+import           System.IO.Unsafe
 
-slide "Hello"
-slide "World"
-slide "Template Haskell Rocks!"
+slide [slideQQ| GG |]
+slide [slideQQ| HH |]
+slide [slideQQ| II |]
 
-printEverything
+mkRevealPage
