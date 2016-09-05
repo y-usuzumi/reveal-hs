@@ -48,5 +48,5 @@ mkRevealPage = [d|main = putStrLn $export|]
       mod <- thisModule
       runIO $ do
         slides <- (fromJust . HM.lookup mod) <$> readIORef slidesRef
-        return $ I.exportRevealPage slides
+        return $ I.exportRevealPage (reverse slides)
       >>= stringE

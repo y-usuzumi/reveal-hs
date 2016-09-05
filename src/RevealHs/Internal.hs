@@ -41,8 +41,8 @@ exportRevealPage slides = [i|
 <!DOCTYPE html>
 <html>
     <head>
-        <link rel="stylesheet" href="css/reveal.css">
-        <link rel="stylesheet" href="css/theme/white.css">
+        <link rel="stylesheet" href="file:///home/kj/Lab/external/reveal.js/css/reveal.css">
+        <link rel="stylesheet" href="file:///home/kj/Lab/external/reveal.js/css/theme/moon.css">
     </head>
     <body>
         <div class="reveal">
@@ -50,7 +50,7 @@ exportRevealPage slides = [i|
 #{render slides}
             </div>
         </div>
-        <script src="js/reveal.js"></script>
+        <script src="file:///home/kj/Lab/external/reveal.js/js/reveal.js"></script>
         <script>
             Reveal.initialize();
         </script>

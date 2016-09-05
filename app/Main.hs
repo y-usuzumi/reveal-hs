@@ -9,8 +9,14 @@ import           RevealHs.QQ
 import           RevealHs.TH
 import           System.IO.Unsafe
 
-slide [slideQQ| GG |]
-slide [slideQQ| HH |]
-slide [slideQQ| II |]
+slide [md|
+# Hello
+
+## You idiot
+|]
+
+slide [md|
+# A monad is just a monoid in the category of endofunctors.
+|]
 
 mkRevealPage
