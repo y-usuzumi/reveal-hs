@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveLift         #-}
 {-# LANGUAGE QuasiQuotes        #-}
+{-# LANGUAGE RecordWildCards    #-}
 
 module RevealHs.Internal where
 
@@ -10,6 +11,7 @@ import qualified Data.HashMap.Strict        as HM
 import           Data.List
 import           Data.String.Interpolate
 import           Language.Haskell.TH.Syntax
+import           RevealHs.Options
 
 type SlideMap = HM.HashMap Module [Slide]
 
@@ -37,34 +39,42 @@ newtype Row = Row [Column]
 newtype Table = Table [Row]
               deriving (Data, Lift, Show)
 
-newtype Slide = Slide Block
+data Slide = Slide Block
+              | MarkdownSlide String
               deriving (Data, Lift, Show)
 
 renderSlide :: Slide -> String
-renderSlide (Slide (TextBlock text)) = text
+renderSlide (Slide (TextBlock text)) = [i|<section>#{text}</section|]
+renderSlide (MarkdownSlide text) = [i|<section data-markdown>
+  <script type="text/template">
+#{text}
+  </script>
+</section>
+|]
 
-exportRevealPage :: SlideMap -> String
-exportRevealPage slides = [i|
+exportRevealPage :: RevealOptions -> SlideMap -> [Module] -> String
+exportRevealPage ro@RevealOptions{..} slides slideGroupOrder = [i|
 <!DOCTYPE html>
 <html>
     <head>
-        <link rel="stylesheet" href="file:///home/kj/Lab/external/reveal.js/css/reveal.css">
-        <link rel="stylesheet" href="file:///home/kj/Lab/external/reveal.js/css/theme/moon.css">
+        <link rel="stylesheet" href="#{revealJsRoot}/css/reveal.css">
+        <link rel="stylesheet" href="#{revealJsRoot}/css/theme/#{theme}.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/headjs/1.0.3/head.js"></script>
     </head>
     <body>
         <div class="reveal">
             <div class="slides">
-#{renderGroup $ HM.toList slides}
+#{renderGroup $ map (slides HM.!) slideGroupOrder}
             </div>
         </div>
-        <script src="file:///home/kj/Lab/external/reveal.js/js/reveal.js"></script>
+        <script src="#{revealJsRoot}/js/reveal.js"></script>
         <script>
-            Reveal.initialize();
+            Reveal.initialize(#{revealOptionsToInitializeParams ro});
         </script>
     </body>
 </html>|]
   where
-    renderGroup :: [(Module, [Slide])] -> String
-    renderGroup = intercalate "\n" . map (\(m, s) -> [i|<section>#{renderSlides s}</section>|])
+    renderGroup :: [[Slide]] -> String
+    renderGroup = intercalate "\n" . map (\s -> [i|<section>#{renderSlides s}</section>|])
     renderSlides :: [Slide] -> String
-    renderSlides = intercalate "\n" . map (\r -> [i|<section>#{renderSlide r}</section>|]) . reverse
+    renderSlides = intercalate "\n" . map renderSlide . reverse

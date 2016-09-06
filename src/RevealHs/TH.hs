@@ -1,13 +1,17 @@
+{-# LANGUAGE QuasiQuotes     #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module RevealHs.TH where
 
+import           Control.Monad
 import           Data.HashMap.Strict        as HM
 import           Data.IORef
 import           Data.Maybe
+import           Data.String.Interpolate
 import           Language.Haskell.TH
 import           Language.Haskell.TH.Syntax
 import           RevealHs.Internal          as I
+import           RevealHs.Options
 import           RevealHs.QQ
 import           System.IO.Unsafe
 
@@ -15,31 +19,30 @@ import           System.IO.Unsafe
 slidesRef :: IORef SlideMap
 slidesRef = unsafePerformIO $ newIORef empty
 
+{-# NOINLINE slideGroupOrderRef #-}
+slideGroupOrderRef :: IORef [Module]
+slideGroupOrderRef = unsafePerformIO $ newIORef []
+
 slide :: Slide -> DecsQ
 slide s = do
   mod <- thisModule
   runIO $ do
+    slides <- readIORef slidesRef
+    when (isNothing $ HM.lookup mod slides) $
+      modifyIORef' slideGroupOrderRef (mod:)
     modifyIORef' slidesRef (alter addSlide mod)
     return []
   where
     addSlide Nothing       = Just [s]
     addSlide (Just slides) = Just (s:slides)
 
-printEverything :: DecsQ
-printEverything = [d|main = print $slides|]
-  where
-    slides :: ExpQ
-    slides = runIO $ do
-      slides <- readIORef slidesRef
-      runQ $ liftData slides
-
-mkRevealPage :: DecsQ
-mkRevealPage = [d|main = putStrLn $export|]
+mkRevealPage :: RevealOptions -> DecsQ
+mkRevealPage ro = [d|main = putStrLn $export|]
   where
     export :: ExpQ
     export = do
-      mod <- thisModule
-      runIO $ do
+      s <- runIO $ do
         slides <- readIORef slidesRef
-        return $ I.exportRevealPage slides
-      >>= stringE
+        slideGroupOrder <- readIORef slideGroupOrderRef
+        return $ I.exportRevealPage ro slides slideGroupOrder
+      stringE s
