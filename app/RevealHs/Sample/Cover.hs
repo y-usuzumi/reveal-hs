@@ -3,8 +3,7 @@
 
 module RevealHs.Sample.Cover where
 
-import RevealHs.QQ
-import RevealHs.TH
+import RevealHs
 
 slide [md|
 # Introduction to Reveal-Hs

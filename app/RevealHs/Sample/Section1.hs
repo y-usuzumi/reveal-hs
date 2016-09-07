@@ -3,10 +3,7 @@
 
 module RevealHs.Sample.Section1 where
 
-import           RevealHs.Internal
-import           RevealHs.Options
-import           RevealHs.QQ
-import           RevealHs.TH
+import           RevealHs
 
 outerOptions defOuterOptions{ outerWidth = Pixels 1024
                             }

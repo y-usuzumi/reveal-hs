@@ -3,8 +3,7 @@
 
 module RevealHs.Sample.Section2 where
 
-import RevealHs.QQ
-import RevealHs.TH
+import RevealHs
 
 slide [md|
 ## Section 2
