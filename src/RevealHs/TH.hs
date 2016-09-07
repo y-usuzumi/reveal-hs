@@ -23,8 +23,11 @@ slidesRef = unsafePerformIO $ newIORef empty
 slideGroupOrderRef :: IORef [Module]
 slideGroupOrderRef = unsafePerformIO $ newIORef []
 
-slide :: Slide -> DecsQ
-slide s = do
+slide :: (SlideOptions -> Slide) -> DecsQ
+slide = flip slideWithOpts defSlideOptions
+
+slideWithOpts :: (SlideOptions -> Slide) -> SlideOptions -> DecsQ
+slideWithOpts s so = do
   mod <- thisModule
   runIO $ do
     slides <- readIORef slidesRef
@@ -33,8 +36,8 @@ slide s = do
     modifyIORef' slidesRef (alter addSlide mod)
     return []
   where
-    addSlide Nothing       = Just [s]
-    addSlide (Just slides) = Just (s:slides)
+    addSlide Nothing       = Just [s so]
+    addSlide (Just slides) = Just (s so:slides)
 
 mkRevealPage :: RevealOptions -> DecsQ
 mkRevealPage ro = [d|main = putStrLn $export|]

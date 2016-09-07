@@ -29,16 +29,27 @@ data Block = TextBlock String
            | TableBlock [[Block]]
            deriving (Data, Lift, Show)
 
-data Slide = BlockSlide Block
-           | MarkdownSlide String
+data Slide = BlockSlide Block SlideOptions
+           | MarkdownSlide String SlideOptions
            deriving (Data, Lift, Show)
+
+data SlideOptions = SlideOptions { stretch :: Bool
+                                 }
+                  deriving (Data, Lift, Show)
+
+defSlideOptions :: SlideOptions
+defSlideOptions = SlideOptions { stretch = False
+                               }
 
 renderSlide :: Slide -> String
 renderSlide s = case s of
-  BlockSlide blk ->
-    [i|<section>#{renderBlock blk}</section>|]
-  MarkdownSlide text ->
-    [i|<section data-markdown>#{renderMarkdown text}</section>|]
+  BlockSlide blk SlideOptions{..} ->
+    [i|<section #{stretchToClass stretch}>#{renderBlock blk}</section>|]
+  MarkdownSlide text SlideOptions{..} ->
+    [i|<section #{stretchToClass stretch} data-markdown>#{renderMarkdown text}</section>|]
+  where
+    stretchToClass stretch =
+      if stretch then [i|class="stretch"|] else ""
 
 renderBlock :: Block -> String
 renderBlock blk = case blk of
