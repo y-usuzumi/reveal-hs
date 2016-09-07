@@ -36,8 +36,21 @@ slideWithOpts s so = do
     modifyIORef' slidesRef (alter addSlide mod)
     return []
   where
-    addSlide Nothing       = Just [s so]
-    addSlide (Just slides) = Just (s so:slides)
+    addSlide Nothing = Just (defOuterOptions, [s so])
+    addSlide (Just (opts, slides)) = Just (opts, s so:slides)
+
+outerOptions :: OuterOptions -> DecsQ
+outerOptions opts = do
+  mod <- thisModule
+  runIO $ do
+    slides <- readIORef slidesRef
+    when (isNothing $ HM.lookup mod slides) $
+      modifyIORef' slideGroupOrderRef (mod:)
+    modifyIORef' slidesRef (alter setOpts mod)
+    return []
+  where
+    setOpts Nothing = Just (opts, [])
+    setOpts (Just (_, slides)) = Just (opts, slides)
 
 mkRevealPage :: RevealOptions -> DecsQ
 mkRevealPage ro = [d|main = putStrLn $export|]

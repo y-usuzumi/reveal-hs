@@ -13,4 +13,5 @@ import           RevealHs.TH
 mkRevealPage def { revealJsRoot = "/home/kj/Lab/external/reveal.js"
                  , theme = "moon"
                  , transition = TransitionSlide
+                 , width = Pixels 1024
                  }

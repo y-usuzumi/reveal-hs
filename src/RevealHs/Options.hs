@@ -1,13 +1,35 @@
-{-# LANGUAGE QuasiQuotes     #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE DeriveDataTypeable    #-}
+{-# LANGUAGE DeriveLift            #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE QuasiQuotes           #-}
+{-# LANGUAGE RecordWildCards       #-}
 
 module RevealHs.Options where
 
 import           Data.Aeson
+import           Data.Data
 import           Data.String.Interpolate
+import           Data.Text                  as T
+import           Language.Haskell.TH.Syntax
+
+data CSSSize = Pixels Int | Percentage Int | NotSet
+             deriving (Data, Eq, Lift, Show)
+
+cssSizeToRevealValue :: CSSSize -> String
+cssSizeToRevealValue size = case size of
+  Pixels px      -> [i|#{show px}|]
+  Percentage pct -> [i|"#{show pct}%"|]
+  NotSet         -> [i|"undefined"|]
+
+cssSizeToCSSValue :: CSSSize -> String
+cssSizeToCSSValue size = case size of
+  Pixels px      -> [i|#{show px}px|]
+  Percentage pct -> [i|"#{show pct}%"|]
+  NotSet         -> error "Check it explicitly in your code and set your desired value"
+
 
 data AutoSlideMethod = AutoSlideNavigateNext
-                     deriving Eq
+                     deriving (Data, Eq, Lift, Show)
 
 data Transition = TransitionDefault
                 | TransitionNone
@@ -16,12 +38,12 @@ data Transition = TransitionDefault
                 | TransitionConvex
                 | TransitionConcave
                 | TransitionZoom
-                deriving Eq
+                deriving (Data, Eq, Lift, Show)
 
 data TransitionSpeed = TransitionSpeedDefault
                      | TransitionSpeedFast
                      | TransitionSpeedSlow
-                     deriving Eq
+                     deriving (Data, Eq, Lift, Show)
 
 data RevealOptions =
   RevealOptions { revealJsRoot                  :: String
@@ -56,8 +78,8 @@ data RevealOptions =
                 , parallaxBackgroundSize        :: String
                 , parallaxBackgroundHorizontal  :: Maybe Int
                 , parallaxBackgroundVertical    :: Maybe Int
-                , width                         :: Int
-                , height                        :: Int
+                , width                         :: CSSSize
+                , height                        :: CSSSize
                 , margin                        :: Double
                 , minScale                      :: Double
                 , maxScale                      :: Double
@@ -96,8 +118,8 @@ def = RevealOptions { revealJsRoot = ""
                     , parallaxBackgroundSize = ""
                     , parallaxBackgroundHorizontal = Nothing
                     , parallaxBackgroundVertical = Nothing
-                    , width = 960
-                    , height = 700
+                    , width = Pixels 960
+                    , height = Pixels 700
                     , margin = 0.1
                     , minScale = 0.2
                     , maxScale = 1.5
@@ -135,8 +157,8 @@ revealOptionsToInitializeParams RevealOptions{..} =
     parallaxBackgroundSize: #{encode parallaxBackgroundSize},
     parallaxBackgroundHorizontal: #{encode parallaxBackgroundHorizontal},
     parallaxBackgroundVertical: #{encode parallaxBackgroundVertical},
-    width: #{encode width},
-    height: #{encode height},
+    width: #{cssSizeToRevealValue width},
+    height: #{cssSizeToRevealValue height},
     margin: #{encode margin},
     minScale: #{encode minScale},
     maxScale: #{encode maxScale},
@@ -175,3 +197,20 @@ revealOptionsToInitializeParams RevealOptions{..} =
       TransitionSpeedDefault -> "default"
       TransitionSpeedFast    -> "fast"
       TransitionSpeedSlow    -> "slow"
+
+
+data OuterOptions = OuterOptions { outerWidth :: CSSSize
+                                 }
+                  deriving (Data, Lift, Show)
+
+defOuterOptions :: OuterOptions
+defOuterOptions = OuterOptions { outerWidth = Pixels 960
+                               }
+
+data SlideOptions = SlideOptions { padding :: CSSSize
+                                 }
+                  deriving (Data, Lift, Show)
+
+defSlideOptions :: SlideOptions
+defSlideOptions = SlideOptions { padding = NotSet
+                               }

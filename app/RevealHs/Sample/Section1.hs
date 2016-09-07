@@ -4,8 +4,12 @@
 module RevealHs.Sample.Section1 where
 
 import           RevealHs.Internal
+import           RevealHs.Options
 import           RevealHs.QQ
 import           RevealHs.TH
+
+outerOptions defOuterOptions{ outerWidth = Pixels 1024
+                            }
 
 slide [md|
 ## Section 1

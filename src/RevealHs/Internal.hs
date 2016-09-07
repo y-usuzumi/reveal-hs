@@ -2,10 +2,10 @@
 {-# LANGUAGE DeriveLift         #-}
 {-# LANGUAGE QuasiQuotes        #-}
 {-# LANGUAGE RecordWildCards    #-}
-{-# LANGUAGE TemplateHaskell    #-}
 
 module RevealHs.Internal where
 
+import           Data.Aeson
 import           Data.Data
 import           Data.Hashable
 import qualified Data.HashMap.Strict        as HM
@@ -14,7 +14,7 @@ import           Data.String.Interpolate
 import           Language.Haskell.TH.Syntax
 import           RevealHs.Options
 
-type SlideMap = HM.HashMap Module [Slide]
+type SlideMap = HM.HashMap Module (OuterOptions, [Slide])
 
 instance Hashable PkgName
 instance Hashable ModName
@@ -33,23 +33,19 @@ data Slide = BlockSlide Block SlideOptions
            | MarkdownSlide String SlideOptions
            deriving (Data, Lift, Show)
 
-data SlideOptions = SlideOptions { stretch :: Bool
-                                 }
-                  deriving (Data, Lift, Show)
-
-defSlideOptions :: SlideOptions
-defSlideOptions = SlideOptions { stretch = False
-                               }
-
 renderSlide :: Slide -> String
 renderSlide s = case s of
-  BlockSlide blk SlideOptions{..} ->
-    [i|<section #{stretchToClass stretch}>#{renderBlock blk}</section>|]
-  MarkdownSlide text SlideOptions{..} ->
-    [i|<section #{stretchToClass stretch} data-markdown>#{renderMarkdown text}</section>|]
+  BlockSlide blk so ->
+    [i|<section style="#{optsToStyle so}">#{renderBlock blk}</section>|]
+  MarkdownSlide text so ->
+    [i|<section data-markdown style="#{optsToStyle so}">#{renderMarkdown text}</section>|]
   where
-    stretchToClass stretch =
-      if stretch then [i|class="stretch"|] else ""
+    optsToStyle SlideOptions{..} = let
+      widthStyle = if padding /= NotSet
+        then [i|padding-left: #{cssSizeToCSSValue padding}; padding-right: #{cssSizeToCSSValue padding}|]
+        else ""
+      in
+        widthStyle
 
 renderBlock :: Block -> String
 renderBlock blk = case blk of
@@ -108,7 +104,14 @@ exportRevealPage ro@RevealOptions{..} slides slideGroupOrder = [i|
     </body>
 </html>|]
   where
-    renderGroup :: [[Slide]] -> String
-    renderGroup = intercalate "\n" . map (\s -> [i|<section>#{renderSlides s}</section>|])
+    renderGroup :: [(OuterOptions, [Slide])] -> String
+    renderGroup = intercalate "\n" . map (uncurry renderSlidesWithOuterOptions)
+      where
+        renderSlidesWithOuterOptions OuterOptions{..} slides = let
+          widthStyle = if outerWidth /= NotSet then [i|width: #{cssSizeToCSSValue outerWidth}|] else ""
+          mhalf (Pixels px) = Pixels (-px `quot` 2)
+          mhalf (Percentage pct) = Percentage (-pct `quot` 2)
+          in
+          [i|<section style="#{widthStyle}; left: 50%; margin-left: #{cssSizeToCSSValue (mhalf outerWidth)}">#{renderSlides slides}</section>|]
     renderSlides :: [Slide] -> String
     renderSlides = intercalate "\n" . map renderSlide . reverse
