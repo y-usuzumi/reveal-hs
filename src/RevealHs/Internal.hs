@@ -59,6 +59,7 @@ exportRevealPage ro@RevealOptions{..} slides slideGroupOrder = [i|
     <head>
         <link rel="stylesheet" href="#{revealJsRoot}/css/reveal.css">
         <link rel="stylesheet" href="#{revealJsRoot}/css/theme/#{theme}.css">
+        <link rel="stylesheet" href="#{revealJsRoot}/lib/css/#{codeTheme}.css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/headjs/1.0.3/head.js"></script>
     </head>
     <body>

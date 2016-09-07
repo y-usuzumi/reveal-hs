@@ -1,4 +1,4 @@
-{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE QuasiQuotes     #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module RevealHs.Options where
@@ -26,6 +26,7 @@ data TransitionSpeed = TransitionSpeedDefault
 data RevealOptions =
   RevealOptions { revealJsRoot                  :: String
                 , theme                         :: String
+                , codeTheme                     :: String
                 , controls                      :: Bool
                 , progress                      :: Bool
                 , slideNumber                   :: Bool
@@ -60,6 +61,7 @@ data RevealOptions =
 def :: RevealOptions
 def = RevealOptions { revealJsRoot = ""
                     , theme = "white"
+                    , codeTheme = "zenburn"
                     , controls = True
                     , progress = True
                     , slideNumber = True
@@ -148,13 +150,13 @@ revealOptionsToInitializeParams RevealOptions{..} =
     convertAutoSlideMethod AutoSlideNavigateNext = "Reveal.navigateNext"
     convertTransition trans = encode $ case trans of
       TransitionDefault -> "default"
-      TransitionNone -> "none"
-      TransitionFade -> "fade"
-      TransitionSlide -> "slide"
-      TransitionConvex -> "convex"
+      TransitionNone    -> "none"
+      TransitionFade    -> "fade"
+      TransitionSlide   -> "slide"
+      TransitionConvex  -> "convex"
       TransitionConcave -> "concave"
-      TransitionZoom -> "zoom"
+      TransitionZoom    -> "zoom"
     convertTransitionSpeed speed = encode $ case speed of
       TransitionSpeedDefault -> "default"
-      TransitionSpeedFast -> "fast"
-      TransitionSpeedSlow -> "slow"
+      TransitionSpeedFast    -> "fast"
+      TransitionSpeedSlow    -> "slow"
