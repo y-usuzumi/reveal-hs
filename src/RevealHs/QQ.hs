@@ -10,10 +10,22 @@ slideQQ :: QuasiQuoter
 slideQQ = QuasiQuoter { quoteExp = parseExp }
 
 md :: QuasiQuoter
-md = QuasiQuoter { quoteExp = parseMarkdown }
+md = QuasiQuoter { quoteExp = parseMarkdownSlide }
+
+mdb :: QuasiQuoter
+mdb = QuasiQuoter { quoteExp = parseMarkdownBlock }
+
+tbl :: QuasiQuoter
+tbl = QuasiQuoter { quoteExp = parseTable }
 
 parseExp :: String -> ExpQ
-parseExp a = liftData $ Slide $ TextBlock a
+parseExp a = liftData $ BlockSlide $ TextBlock a
 
-parseMarkdown :: String -> ExpQ
-parseMarkdown = liftData . MarkdownSlide
+parseMarkdownSlide :: String -> ExpQ
+parseMarkdownSlide = liftData . MarkdownSlide
+
+parseMarkdownBlock :: String -> ExpQ
+parseMarkdownBlock = liftData . MarkdownBlock
+
+parseTable :: String -> ExpQ
+parseTable = undefined

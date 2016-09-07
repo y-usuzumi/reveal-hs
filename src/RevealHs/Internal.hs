@@ -2,6 +2,7 @@
 {-# LANGUAGE DeriveLift         #-}
 {-# LANGUAGE QuasiQuotes        #-}
 {-# LANGUAGE RecordWildCards    #-}
+{-# LANGUAGE TemplateHaskell    #-}
 
 module RevealHs.Internal where
 
@@ -24,32 +25,53 @@ instance Hashable Module
 --------
 
 data Block = TextBlock String
-           | TableBlock Table
+           | MarkdownBlock String
+           | TableBlock [[Block]]
            deriving (Data, Lift, Show)
 
-newtype Cell = Cell [Block]
-             deriving (Data, Lift, Show)
-
-newtype Column = Column [Cell]
-               deriving (Data, Lift, Show)
-
-newtype Row = Row [Column]
-            deriving (Data, Lift, Show)
-
-newtype Table = Table [Row]
-              deriving (Data, Lift, Show)
-
-data Slide = Slide Block
-              | MarkdownSlide String
-              deriving (Data, Lift, Show)
+data Slide = BlockSlide Block
+           | MarkdownSlide String
+           deriving (Data, Lift, Show)
 
 renderSlide :: Slide -> String
-renderSlide (Slide (TextBlock text)) = [i|<section>#{text}</section|]
-renderSlide (MarkdownSlide text) = [i|<section data-markdown>
+renderSlide s = case s of
+  BlockSlide blk ->
+    [i|<section>#{renderBlock blk}</section>|]
+  MarkdownSlide text ->
+    [i|<section data-markdown>#{renderMarkdown text}</section>|]
+
+renderBlock :: Block -> String
+renderBlock blk = case blk of
+  TextBlock text ->
+    [i|<p>#{text}</p>|]
+  MarkdownBlock text ->
+    [i|
+  <p data-markdown>
+    <script type="text/template">
+#{text}
+    </script>
+  </p>
+|]
+  TableBlock tbl ->
+    renderTable tbl
+  where
+    renderTable rows = [i|#{renderRows rows}|]
+      where
+        renderRows = intercalate [i|\n<div style="clear: both"></div>\n|] . map renderRow
+    renderRow cells =
+      [i|#{renderCells cells}|]
+      where
+        renderCells = intercalate "\n" . map (renderCell width)
+        width = 100.0 / fromIntegral (length cells) - 1
+    renderCell width blk' =
+      [i|<div style="float: left; width: #{width}%">#{renderBlock blk'}</div>|]
+
+renderMarkdown :: String -> String
+renderMarkdown text =
+  [i|
   <script type="text/template">
 #{text}
   </script>
-</section>
 |]
 
 exportRevealPage :: RevealOptions -> SlideMap -> [Module] -> String
