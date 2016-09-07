@@ -56,11 +56,16 @@ data RevealOptions =
                 , parallaxBackgroundSize        :: String
                 , parallaxBackgroundHorizontal  :: Maybe Int
                 , parallaxBackgroundVertical    :: Maybe Int
+                , width                         :: Int
+                , height                        :: Int
+                , margin                        :: Double
+                , minScale                      :: Double
+                , maxScale                      :: Double
                 }
 
 def :: RevealOptions
 def = RevealOptions { revealJsRoot = ""
-                    , theme = "white"
+                    , theme = "night"
                     , codeTheme = "zenburn"
                     , controls = True
                     , progress = True
@@ -91,6 +96,11 @@ def = RevealOptions { revealJsRoot = ""
                     , parallaxBackgroundSize = ""
                     , parallaxBackgroundHorizontal = Nothing
                     , parallaxBackgroundVertical = Nothing
+                    , width = 960
+                    , height = 700
+                    , margin = 0.1
+                    , minScale = 0.2
+                    , maxScale = 1.5
                     }
 
 revealOptionsToInitializeParams :: RevealOptions -> String
@@ -125,6 +135,11 @@ revealOptionsToInitializeParams RevealOptions{..} =
     parallaxBackgroundSize: #{encode parallaxBackgroundSize},
     parallaxBackgroundHorizontal: #{encode parallaxBackgroundHorizontal},
     parallaxBackgroundVertical: #{encode parallaxBackgroundVertical},
+    width: #{encode width},
+    height: #{encode height},
+    margin: #{encode margin},
+    minScale: #{encode minScale},
+    maxScale: #{encode maxScale},
     dependencies: [
         // Cross-browser shim that fully implements classList - https://github.com/eligrey/classList.js/
         { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
