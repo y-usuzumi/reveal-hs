@@ -24,10 +24,10 @@ slideGroupOrderRef :: IORef [Module]
 slideGroupOrderRef = unsafePerformIO $ newIORef []
 
 slide :: (SlideOptions -> Slide) -> DecsQ
-slide = flip slideWithOpts defSlideOptions
+slide = slide' defSlideOptions
 
-slideWithOpts :: (SlideOptions -> Slide) -> SlideOptions -> DecsQ
-slideWithOpts s so = do
+slide' :: SlideOptions -> (SlideOptions -> Slide) -> DecsQ
+slide' so s = do
   mod <- thisModule
   runIO $ do
     slides <- readIORef slidesRef
