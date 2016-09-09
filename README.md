@@ -15,7 +15,7 @@ This project is far from being complete. Currently only markdown quasiquoter is 
 
 With reveal-hs, each presentation is a stack project.
 
-* Add reveal-hs to your `extra-deps`.
+* Add reveal-hs to your `packages` list in `stack.yaml`.
 * Write your slides.
 * `stack clean; stack build;  stack exec reveal-hs-exe > output.html`.
 * That's it! Open `output.html` with your favorite browser and check your work!

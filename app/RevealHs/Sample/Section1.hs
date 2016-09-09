@@ -1,6 +1,3 @@
-{-# LANGUAGE QuasiQuotes     #-}
-{-# LANGUAGE TemplateHaskell #-}
-
 module RevealHs.Sample.Section1 where
 
 import           RevealHs
