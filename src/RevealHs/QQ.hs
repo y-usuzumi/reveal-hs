@@ -1,8 +1,10 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module RevealHs.QQ where
 
-import           Data.Text.Lazy                as T
+import           Data.String.Interpolate
+import           Data.Text.Lazy             as T
 import           Language.Haskell.TH
 import           Language.Haskell.TH.Quote
 import           Language.Haskell.TH.Syntax
@@ -18,10 +20,12 @@ mdb :: QuasiQuoter
 mdb = QuasiQuoter { quoteExp = parseMarkdownBlock }
 
 parseTextSlide :: String -> ExpQ
-parseTextSlide a = [|BlockSide (TextBlock a)|]
+parseTextSlide s = [|BlockSide (TextBlock s)|]
 
 parseMarkdownSlide :: String -> ExpQ
-parseMarkdownSlide a = [|MarkdownSlide a|]
+parseMarkdownSlide s = [|MarkdownSlide $interpolatedS|]
+  where
+    interpolatedS = quoteExp i s
 
 parseMarkdownBlock :: String -> ExpQ
 parseMarkdownBlock a = [|MarkdownBlock a|]
