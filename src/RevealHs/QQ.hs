@@ -19,13 +19,14 @@ md = QuasiQuoter { quoteExp = parseMarkdownSlide }
 mdb :: QuasiQuoter
 mdb = QuasiQuoter { quoteExp = parseMarkdownBlock }
 
+interpolateS :: String -> ExpQ
+interpolateS = quoteExp i
+
 parseTextSlide :: String -> ExpQ
 parseTextSlide s = [|BlockSide (TextBlock s)|]
 
 parseMarkdownSlide :: String -> ExpQ
-parseMarkdownSlide s = [|MarkdownSlide $interpolatedS|]
-  where
-    interpolatedS = quoteExp i s
+parseMarkdownSlide s = [|MarkdownSlide $(interpolateS s)|]
 
 parseMarkdownBlock :: String -> ExpQ
-parseMarkdownBlock a = [|MarkdownBlock a|]
+parseMarkdownBlock s = [|MarkdownBlock $(interpolateS s)|]
