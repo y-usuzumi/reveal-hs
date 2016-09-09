@@ -7,7 +7,8 @@ import           System.IO.Unsafe
 slide [md|
 # Introduction to Reveal-Hs
 
-by [薄墨ゆきお](https://github.com/KenetJervet) (written on #{unsafePerformIO today})
+by [薄墨ゆきお](https://github.com/KenetJervet)
+(written on #{unsafePerformIO today})
 
 History:
 
