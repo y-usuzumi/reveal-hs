@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveDataTypeable    #-}
+{-# LANGUAGE DeriveFunctor         #-}
 {-# LANGUAGE DeriveLift            #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE QuasiQuotes           #-}
@@ -12,8 +12,10 @@ import           Data.String.Interpolate
 import           Data.Text                  as T
 import           Language.Haskell.TH.Syntax
 
-data CSSSize = Pixels Int | Percentage Int | NotSet
-             deriving (Data, Eq, Lift, Show)
+data CSSSize' a = Pixels a | Percentage a | NotSet
+             deriving (Eq, Lift, Show, Functor)
+
+type CSSSize = CSSSize' Int
 
 cssSizeToRevealValue :: CSSSize -> String
 cssSizeToRevealValue size = case size of
@@ -29,7 +31,7 @@ cssSizeToCSSValue size = case size of
 
 
 data AutoSlideMethod = AutoSlideNavigateNext
-                     deriving (Data, Eq, Lift, Show)
+                     deriving (Eq, Lift, Show)
 
 data Transition = TransitionDefault
                 | TransitionNone
@@ -38,17 +40,18 @@ data Transition = TransitionDefault
                 | TransitionConvex
                 | TransitionConcave
                 | TransitionZoom
-                deriving (Data, Eq, Lift, Show)
+                deriving (Eq, Lift, Show)
 
 data TransitionSpeed = TransitionSpeedDefault
                      | TransitionSpeedFast
                      | TransitionSpeedSlow
-                     deriving (Data, Eq, Lift, Show)
+                     deriving (Eq, Lift, Show)
 
 data RevealOptions =
   RevealOptions { revealJsRoot                  :: String
                 , theme                         :: String
                 , codeTheme                     :: String
+                , customCSS                     :: String
                 , controls                      :: Bool
                 , progress                      :: Bool
                 , slideNumber                   :: Bool
@@ -89,6 +92,7 @@ def :: RevealOptions
 def = RevealOptions { revealJsRoot = ""
                     , theme = "night"
                     , codeTheme = "zenburn"
+                    , customCSS = ""
                     , controls = True
                     , progress = True
                     , slideNumber = True
@@ -201,7 +205,7 @@ revealOptionsToInitializeParams RevealOptions{..} =
 
 data OuterOptions = OuterOptions { outerWidth :: CSSSize
                                  }
-                  deriving (Data, Lift, Show)
+                  deriving (Lift, Show)
 
 defOuterOptions :: OuterOptions
 defOuterOptions = OuterOptions { outerWidth = Pixels 960
@@ -209,7 +213,7 @@ defOuterOptions = OuterOptions { outerWidth = Pixels 960
 
 data SlideOptions = SlideOptions { padding :: CSSSize
                                  }
-                  deriving (Data, Lift, Show)
+                  deriving (Lift, Show)
 
 defSlideOptions :: SlideOptions
 defSlideOptions = SlideOptions { padding = NotSet

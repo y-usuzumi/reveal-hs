@@ -27,11 +27,11 @@ instance Hashable Module
 data Block = TextBlock String
            | MarkdownBlock String
            | TableBlock [[Block]]
-           deriving (Data, Lift, Show)
+           deriving (Lift, Show)
 
 data Slide = BlockSlide Block SlideOptions
            | MarkdownSlide String SlideOptions
-           deriving (Data, Lift, Show)
+           deriving (Lift, Show)
 
 renderSlide :: Slide -> String
 renderSlide s = case s of
@@ -89,6 +89,9 @@ exportRevealPage ro@RevealOptions{..} slides slideGroupOrder = [i|
         <link rel="stylesheet" href="#{revealJsRoot}/css/reveal.css">
         <link rel="stylesheet" href="#{revealJsRoot}/css/theme/#{theme}.css">
         <link rel="stylesheet" href="#{revealJsRoot}/lib/css/#{codeTheme}.css">
+        <style>
+        #{customCSS}
+        </style>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/headjs/1.0.3/head.js"></script>
     </head>
     <body>
@@ -109,9 +112,7 @@ exportRevealPage ro@RevealOptions{..} slides slideGroupOrder = [i|
       where
         renderSlidesWithOuterOptions OuterOptions{..} slides = let
           widthStyle = if outerWidth /= NotSet then [i|width: #{cssSizeToCSSValue outerWidth}|] else ""
-          mhalf (Pixels px) = Pixels (-px `quot` 2)
-          mhalf (Percentage pct) = Percentage (-pct `quot` 2)
           in
-          [i|<section style="#{widthStyle}; left: 50%; margin-left: #{cssSizeToCSSValue (mhalf outerWidth)}">#{renderSlides slides}</section>|]
+          [i|<section style="#{widthStyle}; left: 50%; margin-left: #{cssSizeToCSSValue $ (negate . (`quot` 2)) <$> outerWidth}">#{renderSlides slides}</section>|]
     renderSlides :: [Slide] -> String
     renderSlides = intercalate "\n" . map renderSlide . reverse
