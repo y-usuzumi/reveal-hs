@@ -204,11 +204,13 @@ revealOptionsToInitializeParams RevealOptions{..} =
 
 
 data OuterOptions = OuterOptions { outerWidth :: CSSSize
+                                 , outerCSS :: String
                                  }
                   deriving (Lift, Show)
 
 defOuterOptions :: OuterOptions
 defOuterOptions = OuterOptions { outerWidth = Pixels 960
+                               , outerCSS = ""
                                }
 
 data SlideOptions = SlideOptions { padding :: CSSSize

@@ -113,6 +113,11 @@ exportRevealPage ro@RevealOptions{..} slides slideGroupOrder = [i|
         renderSlidesWithOuterOptions OuterOptions{..} slides = let
           widthStyle = if outerWidth /= NotSet then [i|width: #{cssSizeToCSSValue outerWidth}|] else ""
           in
-          [i|<section style="#{widthStyle}; left: 50%; margin-left: #{cssSizeToCSSValue $ (negate . (`quot` 2)) <$> outerWidth}">#{renderSlides slides}</section>|]
+          [i|<section style="#{widthStyle}; left: 50%; margin-left: #{cssSizeToCSSValue $ (negate . (`quot` 2)) <$> outerWidth}">
+            <style scoped>
+            #{outerCSS}
+            </style>
+            #{renderSlides slides}
+            </section>|]
     renderSlides :: [Slide] -> String
     renderSlides = intercalate "\n" . map renderSlide . reverse

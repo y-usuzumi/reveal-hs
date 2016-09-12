@@ -40,6 +40,7 @@ executable reveal-hs-exe
                      , RevealHs.Sample.Env
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
+                     , interpolate >= 0.1
                      , reveal-hs
                      , time >= 1.6
   default-language:    Haskell2010
