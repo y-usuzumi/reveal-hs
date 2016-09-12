@@ -3,7 +3,7 @@ module RevealHs.Sample.Section1 where
 import           Data.String.Interpolate
 import           RevealHs
 
-outerOptions defOuterOptions{ outerWidth = Pixels 1024
+groupOptions defGroupOptions{ groupWidth = Pixels 1024
                             }
 
 slide [md|

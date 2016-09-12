@@ -203,20 +203,22 @@ revealOptionsToInitializeParams RevealOptions{..} =
       TransitionSpeedSlow    -> "slow"
 
 
-data OuterOptions = OuterOptions { outerWidth :: CSSSize
-                                 , outerCSS :: String
+data GroupOptions = GroupOptions { groupWidth :: CSSSize
+                                 , groupCSS   :: String
                                  }
                   deriving (Lift, Show)
 
-defOuterOptions :: OuterOptions
-defOuterOptions = OuterOptions { outerWidth = Pixels 960
-                               , outerCSS = ""
+defGroupOptions :: GroupOptions
+defGroupOptions = GroupOptions { groupWidth = Pixels 960
+                               , groupCSS = ""
                                }
 
-data SlideOptions = SlideOptions { padding :: CSSSize
+data SlideOptions = SlideOptions { slidePadding :: CSSSize
+                                 , slideCSS     :: String
                                  }
                   deriving (Lift, Show)
 
 defSlideOptions :: SlideOptions
-defSlideOptions = SlideOptions { padding = NotSet
+defSlideOptions = SlideOptions { slidePadding = NotSet
+                               , slideCSS = ""
                                }

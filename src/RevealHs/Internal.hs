@@ -14,7 +14,7 @@ import           Data.String.Interpolate
 import           Language.Haskell.TH.Syntax
 import           RevealHs.Options
 
-type SlideMap = HM.HashMap Module (OuterOptions, [Slide])
+type SlideMap = HM.HashMap Module (GroupOptions, [Slide])
 
 instance Hashable PkgName
 instance Hashable ModName
@@ -36,13 +36,23 @@ data Slide = BlockSlide Block SlideOptions
 renderSlide :: Slide -> String
 renderSlide s = case s of
   BlockSlide blk so ->
-    [i|<section style="#{optsToStyle so}">#{renderBlock blk}</section>|]
+    [i|<section style="#{optsToStyle so}">
+      <style scoped>
+      #{slideCSS so}
+      </style>
+      #{renderBlock blk}
+      </section>|]
   MarkdownSlide text so ->
-    [i|<section data-markdown style="#{optsToStyle so}">#{renderMarkdown text}</section>|]
+    [i|<section data-markdown style="#{optsToStyle so}">
+      <style scoped>
+      #{slideCSS so}
+      </style>
+      #{renderMarkdown text}
+      </section>|]
   where
     optsToStyle SlideOptions{..} = let
-      widthStyle = if padding /= NotSet
-        then [i|padding-left: #{cssSizeToCSSValue padding}; padding-right: #{cssSizeToCSSValue padding}|]
+      widthStyle = if slidePadding /= NotSet
+        then [i|padding-left: #{cssSizeToCSSValue slidePadding}; padding-right: #{cssSizeToCSSValue slidePadding}|]
         else ""
       in
         widthStyle
@@ -107,15 +117,15 @@ exportRevealPage ro@RevealOptions{..} slides slideGroupOrder = [i|
     </body>
 </html>|]
   where
-    renderGroup :: [(OuterOptions, [Slide])] -> String
-    renderGroup = intercalate "\n" . map (uncurry renderSlidesWithOuterOptions)
+    renderGroup :: [(GroupOptions, [Slide])] -> String
+    renderGroup = intercalate "\n" . map (uncurry renderSlidesWithGroupOptions)
       where
-        renderSlidesWithOuterOptions OuterOptions{..} slides = let
-          widthStyle = if outerWidth /= NotSet then [i|width: #{cssSizeToCSSValue outerWidth}|] else ""
+        renderSlidesWithGroupOptions GroupOptions{..} slides = let
+          widthStyle = if groupWidth /= NotSet then [i|width: #{cssSizeToCSSValue groupWidth}|] else ""
           in
-          [i|<section style="#{widthStyle}; left: 50%; margin-left: #{cssSizeToCSSValue $ (negate . (`quot` 2)) <$> outerWidth}">
+          [i|<section style="#{widthStyle}; left: 50%; margin-left: #{cssSizeToCSSValue $ (negate . (`quot` 2)) <$> groupWidth}">
             <style scoped>
-            #{outerCSS}
+            #{groupCSS}
             </style>
             #{renderSlides slides}
             </section>|]

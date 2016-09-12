@@ -36,11 +36,11 @@ slide' so s = do
     modifyIORef' slidesRef (alter addSlide mod)
     return []
   where
-    addSlide Nothing = Just (defOuterOptions, [s so])
+    addSlide Nothing = Just (defGroupOptions, [s so])
     addSlide (Just (opts, slides)) = Just (opts, s so:slides)
 
-outerOptions :: OuterOptions -> DecsQ
-outerOptions opts = do
+groupOptions :: GroupOptions -> DecsQ
+groupOptions opts = do
   mod <- thisModule
   runIO $ do
     slides <- readIORef slidesRef
